@@ -82,9 +82,9 @@ class LoginHandler extends RequestHandler
      */
     public function login()
     {
-        return [
-            'Form' => $this->loginForm(),
-        ];
+        $auth0 = Injector::inst()->get(Client::class);
+        $auth0->login();
+        return [];
     }
 
     /**

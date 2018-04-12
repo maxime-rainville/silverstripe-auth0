@@ -10,7 +10,6 @@ use SilverStripe\Security\MemberAuthenticator\LoginHandler as SSLoginHandler;
 use SilverStripe\Security\MemberAuthenticator\LogoutHandler;
 
 
-
 class Authenticator implements SSAuthenticator
 {
 

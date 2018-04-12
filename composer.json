@@ -12,7 +12,8 @@
     "minimum-stability": "dev",
     "require": {
         "silverstripe/framework": "^4",
-        "silverstripe/vendor-plugin": "^1.0"
+        "silverstripe/vendor-plugin": "^1.0",
+        "auth0/auth0-php": "^5.1"
     },
     "require-dev": {
         "phpunit/PHPUnit": "~4.8"
