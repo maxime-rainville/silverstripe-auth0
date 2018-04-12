@@ -1,0 +1,37 @@
+{
+    "name": "maximerainville/silverstripe-auth0",
+    "description": "Auth0 authorizer for SilverStipe 4.",
+    "type": "silverstripe-vendormodule",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Maxime Rainville",
+            "email": "maxime@rainville.me"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {
+        "silverstripe/framework": "^4",
+        "silverstripe/vendor-plugin": "^1.0"
+    },
+    "require-dev": {
+        "phpunit/PHPUnit": "~4.8"
+    },
+    "extra": {
+        "expose": [
+        ]
+    },
+    "autoload": {
+        "psr-4": {
+            "MaximeRainville\\Auth0\\": "code/",
+            "MaximeRainville\\Auth0\\Test\\": "tests/php/"
+        }
+    },
+    "scripts": {
+        "lint": "phpcs code/ tests/php/",
+        "lint-clean": "phpcbf code/ tests/php/"
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
+}

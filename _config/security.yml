@@ -1,0 +1,26 @@
+---
+Name: coresecurity
+After:
+  - '#requestprocessors'
+---
+SilverStripe\Core\Injector\Injector:
+  SilverStripe\Control\Director:
+    properties:
+      Middlewares:
+        AuthenticationMiddleware: '%$SilverStripe\Security\AuthenticationMiddleware'
+        BasicAuthMiddleware: '%$SilverStripe\Security\BasicAuthMiddleware'
+  SilverStripe\Security\AuthenticationMiddleware:
+    properties:
+      AuthenticationHandler: '%$SilverStripe\Security\AuthenticationHandler'
+  SilverStripe\Security\BasicAuthMiddleware:
+    properties:
+      URLPatterns: []
+  SilverStripe\Security\Security:
+    properties:
+      Authenticators:
+        default: '%$SilverStripe\Security\MemberAuthenticator\MemberAuthenticator'
+  SilverStripe\Security\CMSSecurity:
+    properties:
+      Authenticators:
+        cms: '%$SilverStripe\Security\MemberAuthenticator\CMSMemberAuthenticator'
+  SilverStripe\Security\IdentityStore: '%$SilverStripe\Security\AuthenticationHandler'
