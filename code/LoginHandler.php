@@ -13,6 +13,7 @@ use SilverStripe\Security\IdentityStore;
 use SilverStripe\Security\Member;
 use SilverStripe\Security\Security;
 use SilverStripe\Security\LoginForm as SSLoginForm;
+use SilverStripe\Forms\Form;
 
 /**
  * Handle login requests from MaximeRainville\Auth0\Authenticator.
@@ -40,7 +41,6 @@ class LoginHandler extends RequestHandler
      */
     private static $allowed_actions = [
         'login',
-        'LoginForm',
         'logout',
         'callback',
     ];
@@ -90,9 +90,26 @@ class LoginHandler extends RequestHandler
      */
     public function login()
     {
+        // Make sure we don't have a user already logged in.
+        if (Security::getCurrentUser()) {
+            return [
+                'Form' => $this->LoginAsSomeoneElseForm()
+            ];
+        }
+
+        // This will redirect the user to the Auth0 Form
         $auth0 = Injector::inst()->get(Client::class);
         $auth0->login();
         return [];
+    }
+
+    public function LoginAsSomeoneElseForm()
+    {
+        return LoginAsSomeoneElseForm::create(
+            $this,
+            'LoginAsSomeoneElseForm',
+            get_class($this->authenticator)
+        );
     }
 
     /**
@@ -105,6 +122,8 @@ class LoginHandler extends RequestHandler
      */
     public function callback(HTTPRequest $request)
     {
+        Security::setCurrentUser(null);
+
         $failureMessage = null;
         $this->extend('beforeLogin');
         // Successful login

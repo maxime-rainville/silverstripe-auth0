@@ -18,6 +18,10 @@ class LogoutHandler extends SSLogoutHandler
      */
     protected function redirectAfterLogout()
     {
+        if ($this->request->getVar('forceRedirect')) {
+            return parent::redirectAfterLogout();
+        }
+
         return $this->redirect(self::config()->logout_url);
     }
 
