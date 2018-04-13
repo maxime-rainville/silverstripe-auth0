@@ -42,7 +42,15 @@ class LoginHandler extends RequestHandler
         'login',
         'LoginForm',
         'logout',
+        'callback',
     ];
+
+    /**
+     * Whatever we allow registration without any pre-condition. Defaults to `FALSE`.
+     * If set to `TRUE` anyone can use the Auth0 authentication request to create an account.
+     * @var bool
+     */
+    private static $allow_public_registration = false;
 
     /**
      * @var string Called link on this handler
@@ -88,70 +96,27 @@ class LoginHandler extends RequestHandler
     }
 
     /**
-     * Return the MemberLoginForm form
-     *
-     * @skipUpgrade
-     * @return SSLoginForm
-     */
-    public function loginForm()
-    {
-        return LoginForm::create(
-            $this,
-            get_class($this->authenticator),
-            'LoginForm'
-        );
-    }
-
-    /**
      * Login form handler method
      *
      * This method is called when the user finishes the login flow
      *
-     * @param array $data Submitted data
-     * @param SSLoginForm $form
      * @param HTTPRequest $request
      * @return HTTPResponse
      */
-    public function doLogin($data, SSLoginForm $form, HTTPRequest $request)
+    public function callback(HTTPRequest $request)
     {
         $failureMessage = null;
-
         $this->extend('beforeLogin');
         // Successful login
-        /** @var ValidationResult $result */
-        if ($member = $this->checkLogin($data, $request, $result)) {
-            $this->performLogin($member, $data, $request);
+        if ($member = $this->checkLogin()) {
+            $this->performLogin($member, [], $request);
+
             // Allow operations on the member after successful login
             $this->extend('afterLogin', $member);
-
             return $this->redirectAfterSuccessfulLogin();
         }
 
         $this->extend('failedLogin');
-
-        $message = implode("; ", array_map(
-            function ($message) {
-                return $message['message'];
-            },
-            $result->getMessages()
-        ));
-
-        $form->sessionMessage($message, 'bad');
-
-        // Failed login
-
-        /** @skipUpgrade */
-        if (array_key_exists('Email', $data)) {
-            $rememberMe = (isset($data['Remember']) && Security::config()->get('autologin_enabled') === true);
-            $this
-                ->getRequest()
-                ->getSession()
-                ->set('SessionForms.MemberLoginForm.Email', $data['Email'])
-                ->set('SessionForms.MemberLoginForm.Remember', $rememberMe);
-        }
-
-        // Fail to login redirects back to form
-        return $form->getRequestHandler()->redirectBackToForm();
     }
 
     public function getReturnReferer()
@@ -175,16 +140,7 @@ class LoginHandler extends RequestHandler
      */
     protected function redirectAfterSuccessfulLogin()
     {
-        $this
-            ->getRequest()
-            ->getSession()
-            ->clear('SessionForms.MemberLoginForm.Email')
-            ->clear('SessionForms.MemberLoginForm.Remember');
-
         $member = Security::getCurrentUser();
-        if ($member->isPasswordExpired()) {
-            return $this->redirectToChangePassword();
-        }
 
         // Absolute redirection URLs may cause spoofing
         $backURL = $this->getBackURL();
@@ -222,14 +178,14 @@ class LoginHandler extends RequestHandler
      * @return Member Returns the member object on successful authentication
      *                or NULL on failure.
      */
-    public function checkLogin($data, HTTPRequest $request, ValidationResult &$result = null)
+    public function checkLogin(ValidationResult &$result = null)
     {
-        $member = $this->authenticator->authenticate($data, $request, $result);
-        if ($member instanceof Member) {
-            return $member;
-        }
+        $auth0 = Injector::inst()->get(Client::class);
+        $userData = $auth0->getUser();
 
-        return null;
+        $member = $this->updateMember($userData);
+
+        return $member ? $member : null;
     }
 
     /**
@@ -243,30 +199,77 @@ class LoginHandler extends RequestHandler
      */
     public function performLogin($member, $data, HTTPRequest $request)
     {
-        /** IdentityStore */
-        $rememberMe = (isset($data['Remember']) && Security::config()->get('autologin_enabled'));
-        /** @var IdentityStore $identityStore */
         $identityStore = Injector::inst()->get(IdentityStore::class);
-        $identityStore->logIn($member, $rememberMe, $request);
+        $identityStore->logIn($member, false, $request);
 
         return $member;
     }
 
     /**
-     * Invoked if password is expired and must be changed
+     * Given a user info from Auth0, will attempt to retrive a matching Member based on its email address.
      *
-     * @skipUpgrade
-     * @return HTTPResponse
+     * If no Member is found, will check if it the userData allows registration. If registration is allowed, a new
+     * Member will be created. Otherwise, `FALSE` will be returned.
+     *
+     * If we have a Member to work with, it will be updated with the information provided by Auth0.
+     *
+     * @param  array  $userInfo
+     * @return Member|false
      */
-    protected function redirectToChangePassword()
+    protected function updateMember(array $userInfo)
     {
-        $cp = ChangePasswordForm::create($this, 'ChangePasswordForm');
-        $cp->sessionMessage(
-            _t('SilverStripe\\Security\\Member.PASSWORDEXPIRED', 'Your password has expired. Please choose a new one.'),
-            'good'
-        );
-        $changedPasswordLink = Security::singleton()->Link('changepassword');
+        // Try to find our member
+        $member = Member::get()->filter('Email', $userInfo['email'])->First();
 
-        return $this->redirect($this->addBackURLParam($changedPasswordLink));
+        // Couldn't find a member. Let's see if we can create it.
+        if (!$member) {
+            if ($this->allowUserToRegister($userInfo)) {
+                $member = Member::create();
+                $member->Email = $userInfo['email'];
+            } else {
+                return false;
+            }
+        }
+
+        // Fill out some common field
+        $member->FirstName = isset($userInfo['given_name']) ? $userInfo['given_name']: '';
+        $member->Surname = isset($userInfo['family_name']) ? $userInfo['family_name']: '';
+
+        // Give a chance to our Extension to handle custom fields.
+        $this->extend('updateMember', $member, $userInfo);
+
+        $member->write();
+
+        return $member;
     }
+
+    /**
+     * Determines if users not already in the system are allowed to register.
+     *
+     * If the `allow_public_registration` config flag is set to true, user will be allowed to register.
+     *
+     * Extension can hook into this method if they want.
+     *
+     * @param  array  $userInfo [description]
+     * @return bool
+     */
+    public function allowUserToRegister(array $userInfo)
+    {
+        if (self::config()->allow_public_registration) {
+            return true;
+        };
+
+        // Check if one of our extension allows registrations.
+        $answers = $this->extend('allowUserToRegister', $userInfo);
+        foreach ($answers as $answer) {
+            if ($answer) {
+                return true;
+            }
+        }
+
+        // Dissallow registration.
+        return false;
+    }
+
+
 }
