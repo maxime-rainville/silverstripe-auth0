@@ -18,7 +18,7 @@ use SilverStripe\Forms\Form;
 /**
  * Handle login requests from MaximeRainville\Auth0\Authenticator.
  *
- * @internal Mostly copied from the regular LoginHandler. Unfortunatly, the regular login handler is tighltly coupled
+ * @internal Mostly copied from the regular LoginHandler. Unfortunately, the regular login handler is tightly coupled
  * with the MemberLoginForm, which makes our work a bit more difficult here.
  */
 class LoginHandler extends RequestHandler
@@ -286,7 +286,7 @@ class LoginHandler extends RequestHandler
             }
         }
 
-        // Dissallow registration.
+        // Disallow registration.
         return false;
     }
 

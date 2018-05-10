@@ -1,5 +1,5 @@
 <?php
-namespace MaximeRainville\Auth0;
+namespace MaximeRainville\src;
 
 use SilverStripe\Security\Authenticator as SSAuthenticator;
 use SilverStripe\Security\Member;

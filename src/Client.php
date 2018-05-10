@@ -12,7 +12,7 @@ use SilverStripe\Control\Controller;
 /**
  * Simple extension of the base `Auth0\SDK\Auth0` client that can be called via the Injector.
  *
- * You need to specify the following keys in your Environement file:
+ * You need to specify the following keys in your Environment file:
  * * AUTH0_DOMAIN
  * * AUTH0_CLIENT_ID
  * * AUTH0_CLIENT_SECRET
