@@ -266,6 +266,11 @@ class LoginHandler extends RequestHandler
         // Give a chance to our Extension to handle custom fields.
         $this->extend('updateMember', $member, $userInfo);
 
+        // Check if the Member has EnrichAuth0Profile that expect some Auth0 data
+        if ($member->hasMethod('EnrichAuth0Profile')) {
+            $member->EnrichAuth0Profile($userInfo);
+        }
+
         $member->write();
 
         return $member;
