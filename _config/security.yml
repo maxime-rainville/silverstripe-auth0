@@ -11,3 +11,7 @@ SilverStripe\Core\Injector\Injector:
   SilverStripe\Security\MemberAuthenticator\MemberAuthenticator:
     class:
       MaximeRainville\Auth0\Authenticator
+
+SilverStripe\Security\Member:
+  extensions:
+    - MaximeRainville\Auth0\Extensions\MemberExtraMetaDataExtension
