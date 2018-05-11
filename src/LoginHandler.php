@@ -2,6 +2,7 @@
 
 namespace MaximeRainville\Auth0;
 
+use Auth0\SDK\Exception\CoreException;
 use SilverStripe\Control\Controller;
 use SilverStripe\Control\HTTPRequest;
 use SilverStripe\Control\HTTPResponse;
@@ -12,8 +13,7 @@ use SilverStripe\Security\Authenticator as SSAuthenticator;
 use SilverStripe\Security\IdentityStore;
 use SilverStripe\Security\Member;
 use SilverStripe\Security\Security;
-use SilverStripe\Security\LoginForm as SSLoginForm;
-use SilverStripe\Forms\Form;
+use PageController;
 
 /**
  * Handle login requests from MaximeRainville\Auth0\Authenticator.
@@ -30,6 +30,7 @@ class LoginHandler extends RequestHandler
 
     /**
      * @var array
+     * @config
      */
     private static $url_handlers = [
         '' => 'login',
@@ -42,7 +43,7 @@ class LoginHandler extends RequestHandler
     private static $allowed_actions = [
         'login',
         'logout',
-        'callback',
+        'callback'
     ];
 
     /**
@@ -136,6 +137,11 @@ class LoginHandler extends RequestHandler
         }
 
         $this->extend('failedLogin');
+
+        $this->httpError(
+            401,
+            'Could not log you in'
+        );
     }
 
     public function getReturnReferer()
@@ -191,8 +197,6 @@ class LoginHandler extends RequestHandler
     /**
      * Try to authenticate the user
      *
-     * @param array $data Submitted data
-     * @param HTTPRequest $request
      * @param ValidationResult $result
      * @return Member Returns the member object on successful authentication
      *                or NULL on failure.
@@ -200,7 +204,12 @@ class LoginHandler extends RequestHandler
     public function checkLogin(ValidationResult &$result = null)
     {
         $auth0 = Injector::inst()->get(Client::class);
-        $userData = $auth0->getUser();
+
+        try {
+            $userData = $auth0->getUser();
+        } catch (CoreException $ex) {
+            return null;
+        }
 
         $member = $this->updateMember($userData);
 
@@ -290,5 +299,15 @@ class LoginHandler extends RequestHandler
         return false;
     }
 
+    /**
+     * @inheritdoc
+     * @internal We want to display pretty error pages so we will relay errors to the PageController.
+     * @param int $errorCode
+     * @param null $errorMessage
+     */
+    public function httpError($errorCode, $errorMessage = null)
+    {
+        return PageController::singleton()->httpError($errorCode, $errorMessage);
+    }
 
 }
