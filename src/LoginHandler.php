@@ -13,6 +13,10 @@ use SilverStripe\Security\Authenticator as SSAuthenticator;
 use SilverStripe\Security\IdentityStore;
 use SilverStripe\Security\Member;
 use SilverStripe\Security\Security;
+use SilverStripe\Forms\FieldList;
+use SilverStripe\Forms\Form;
+use SilverStripe\Forms\HiddenField;
+use SilverStripe\Forms\FormAction;
 use PageController;
 
 /**
@@ -43,7 +47,9 @@ class LoginHandler extends RequestHandler
     private static $allowed_actions = [
         'login',
         'logout',
-        'callback'
+        'callback',
+        'doLogin',
+        'Form'
     ];
 
     /**
@@ -98,10 +104,30 @@ class LoginHandler extends RequestHandler
             ];
         }
 
+        return ['Form' => $this->Form()];
+
+
         // This will redirect the user to the Auth0 Form
         $auth0 = Injector::inst()->get(Client::class);
         $auth0->login();
         return [];
+    }
+
+    public function Form()
+    {
+        return Form::create(
+            $this,
+            'Form',
+            FieldList::create([]),
+            FieldList::create([FormAction::create('doLogin', 'Login with Auth0')])
+        );
+    }
+
+    public function doLogin()
+    {
+        $auth0 = Injector::inst()->get(Client::class);
+        $auth0->login();
+        return;
     }
 
     public function LoginAsSomeoneElseForm()
