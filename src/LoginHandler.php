@@ -18,6 +18,7 @@ use SilverStripe\Forms\Form;
 use SilverStripe\Forms\HiddenField;
 use SilverStripe\Forms\FormAction;
 use PageController;
+use Auth0\SDK\Auth0;
 
 /**
  * Handle login requests from MaximeRainville\Auth0\Authenticator.
@@ -108,28 +109,44 @@ class LoginHandler extends RequestHandler
 
 
         // This will redirect the user to the Auth0 Form
-        $auth0 = Injector::inst()->get(Client::class);
+        $auth0 = Injector::inst()->get(Auth0::class);
         $auth0->login();
         return [];
     }
 
+    /**
+     * Display a login form.
+     * @return Form
+     */
     public function Form()
     {
+        $backURL = $this->getRequest()->getVar('BackURL');
+
         return Form::create(
             $this,
             'Form',
-            FieldList::create([]),
+            FieldList::create([
+                HiddenField::create('BackURL')->setValue($backURL)
+            ]),
             FieldList::create([FormAction::create('doLogin', 'Login with Auth0')])
         );
     }
 
+    /**
+     * Do the actual login action that will redirect the user to Auth0 for authentication.
+     * @return void
+     */
     public function doLogin()
     {
-        $auth0 = Injector::inst()->get(Client::class);
+        $auth0 = Injector::inst()->get(Auth0::class);
         $auth0->login();
         return;
     }
 
+    /**
+     * Display a Form inviting the user to login as someone else.
+     * @return Form
+     */
     public function LoginAsSomeoneElseForm()
     {
         return LoginAsSomeoneElseForm::create(
@@ -229,7 +246,7 @@ class LoginHandler extends RequestHandler
      */
     public function checkLogin(ValidationResult &$result = null)
     {
-        $auth0 = Injector::inst()->get(Client::class);
+        $auth0 = Injector::inst()->get(Auth0::class);
 
         try {
             $userData = $auth0->getUser();

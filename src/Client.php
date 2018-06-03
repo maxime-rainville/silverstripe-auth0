@@ -31,14 +31,25 @@ use SilverStripe\Control\Controller;
  * ```php
  * \SilverStripe\Core\Injector\Injector::inst()->get(\MaximeRainville\Auth0\Client::class)
  * ```
+ * @property string AuthenticatorKey
  */
 class Client extends Auth0
 {
 
     use Injectable;
 
-    public function __construct()
+    /**
+     * @var string
+     */
+    public $AuthenticatorKey;
+
+    /**
+     * Instantiate a new Auth0 client.
+     * @param string $AuthenticatorKey Key used to add our AUth0 Authenticator to Security.
+     */
+    public function __construct($AuthenticatorKey='')
     {
+        $this->AuthenticatorKey = $AuthenticatorKey;
         return parent::__construct($this->getDefaultSettings());
     }
 
@@ -80,10 +91,17 @@ class Client extends Auth0
         return $domain;
     }
 
+    /**
+     * Generate the URL that where the user needs to be redirected to after a successful authentication in Auth0.
+     * @return string
+     */
     protected function getRedirectUri()
     {
-        return Director::absoluteURL(Security::login_url() . '/callback') .
-            '?BackURL=' . urlencode(Controller::curr()->getBackURL());
+        $authenticatorSegment = $this->AuthenticatorKey ? '/' . $this->AuthenticatorKey : '';
+        return Director::absoluteURL(
+            Security::login_url() . $authenticatorSegment . '/callback'
+            ) . '?BackURL=' . urlencode(Controller::curr()->getBackURL());
     }
+
 
 }
