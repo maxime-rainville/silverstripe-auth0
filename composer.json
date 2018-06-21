@@ -9,7 +9,6 @@
             "email": "maxime@rainville.me"
         }
     ],
-    "minimum-stability": "dev",
     "require": {
         "silverstripe/framework": "^4",
         "silverstripe/vendor-plugin": "^1.0",
@@ -25,7 +24,7 @@
     "autoload": {
         "psr-4": {
             "MaximeRainville\\Auth0\\": "src/",
-            "MaximeRainville\\Auth0\\Test\\": "tests/php/"
+            "MaximeRainville\\Auth0\\Tests\\": "tests/php/"
         }
     },
     "scripts": {
