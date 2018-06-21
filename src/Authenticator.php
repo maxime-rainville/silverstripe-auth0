@@ -13,39 +13,28 @@ class Authenticator implements SSAuthenticator
 
     use Extensible;
 
+    /**
+     * @inheritdoc
+     * @return int
+     */
     public function supportedServices()
     {
         // Bitwise-OR of all the supported services in this Authenticator, to make a bitmask
-        return Authenticator::LOGIN | Authenticator::LOGOUT;
+        return SSAuthenticator::LOGIN | SSAuthenticator::LOGOUT;
     }
 
-    public function authenticate(array $data, HTTPRequest $request, ValidationResult &$result = null)
-    {
-        // Find authenticated member
-        $member = $this->authenticateMember($data, $result);
-
-        // Optionally record every login attempt as a {@link LoginAttempt} object
-        $this->recordLoginAttempt($data, $request, $member, $result->isValid());
-
-        if ($member) {
-            $request->getSession()->clear('BackURL');
-        }
-
-        return $result->isValid() ? $member : null;
-    }
 
     /**
-     * Attempt to find and authenticate member if possible from the given data
-     *
-     * @skipUpgrade
-     * @param array $data Form submitted data
-     * @param ValidationResult $result
-     * @param Member $member This third parameter is used in the CMSAuthenticator(s)
-     * @return Member Found member, regardless of successful login
+     * @inheritdoc
+     * @param array $data
+     * @param HTTPRequest $request
+     * @param ValidationResult|null $result
+     * @return null|Member
      */
-    protected function authenticateMember($data, ValidationResult &$result = null, Member $member = null)
+    public function authenticate(array $data, HTTPRequest $request, ValidationResult &$result = null)
     {
-
+        // Not compatible with auth0 authentication.
+        return null;
     }
 
     /**
@@ -61,30 +50,42 @@ class Authenticator implements SSAuthenticator
      */
     public function checkPassword(Member $member, $password, ValidationResult &$result = null)
     {
-        // Will always fail
+        if ($result === null) {
+            $result = new ValidationResult();
+        }
+
+        $result->addError(_t(
+            static::class . '.CHECK_PASSWORD',
+            'Can not check password with Auth0 authenticator.'
+        ));
+
+        return $result;
     }
 
     /**
+     * @inheritdoc
      * @param string $link
-     * @return LostPasswordHandler
+     * @return mixed
      */
     public function getLostPasswordHandler($link)
     {
-        // Should always fail
-        return LostPasswordHandler::create($link, $this);
+        // We don't support lost password
+        return null;
     }
 
     /**
+     * @inheritdoc
      * @param string $link
-     * @return ChangePasswordHandler
+     * @return mixed
      */
     public function getChangePasswordHandler($link)
     {
-        // Should always fail
-        return ChangePasswordHandler::create($link, $this);
+        // Not needed
+        return null;
     }
 
     /**
+     * @inheritdoc
      * @param string $link
      * @return LoginHandler
      */
@@ -94,6 +95,7 @@ class Authenticator implements SSAuthenticator
     }
 
     /**
+     * @inheritdoc
      * @param string $link
      * @return LogoutHandler
      */
