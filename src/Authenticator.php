@@ -7,7 +7,6 @@ use SilverStripe\Core\Extensible;
 use SilverStripe\Control\HTTPRequest;
 use SilverStripe\ORM\ValidationResult;
 
-
 class Authenticator implements SSAuthenticator
 {
 
@@ -103,5 +102,4 @@ class Authenticator implements SSAuthenticator
     {
         return LogoutHandler::create($link, $this);
     }
-
 }

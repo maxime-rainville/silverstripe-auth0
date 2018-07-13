@@ -64,7 +64,7 @@ class Client extends Auth0
      * @param string $domain Auth0 domain where we will connect. Can be provided via the AUTH0_DOMAIN environment
      * variable as well.
      */
-    public function __construct($AuthenticatorKey='', $baseSettings = [], $baseDomain = '')
+    public function __construct($AuthenticatorKey = '', $baseSettings = [], $baseDomain = '')
     {
         $this->AuthenticatorKey = $AuthenticatorKey;
         $this->baseSettings = $baseSettings;
@@ -119,8 +119,6 @@ class Client extends Auth0
         $authenticatorSegment = $this->AuthenticatorKey ? '/' . $this->AuthenticatorKey : '';
         return Director::absoluteURL(
             Security::login_url() . $authenticatorSegment . '/callback'
-            ) . '?BackURL=' . urlencode(Controller::curr()->getBackURL());
+        ) . '?BackURL=' . urlencode(Controller::curr()->getBackURL());
     }
-
-
 }

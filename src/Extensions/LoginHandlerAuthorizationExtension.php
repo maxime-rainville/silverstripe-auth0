@@ -82,7 +82,6 @@ class LoginHandlerAuthorizationExtension extends Extension
         foreach ($toAllow as $code) {
             Permission::grant($group->ID, $code);
         }
-
     }
 
     /**
@@ -105,7 +104,4 @@ class LoginHandlerAuthorizationExtension extends Extension
 
         return $group;
     }
-
-
 }
-

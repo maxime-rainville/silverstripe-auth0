@@ -24,5 +24,4 @@ class LogoutHandler extends SSLogoutHandler
 
         return $this->redirect(self::config()->logout_url);
     }
-
 }

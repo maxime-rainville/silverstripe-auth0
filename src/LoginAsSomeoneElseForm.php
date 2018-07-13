@@ -48,5 +48,4 @@ class LoginAsSomeoneElseForm extends Form
 
         $this->setFormAction(Security::logout_url());
     }
-
 }

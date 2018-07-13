@@ -357,5 +357,4 @@ class LoginHandler extends RequestHandler
     {
         return PageController::singleton()->httpError($errorCode, $errorMessage);
     }
-
 }

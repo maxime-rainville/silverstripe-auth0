@@ -7,17 +7,17 @@ use SilverStripe\Control\Controller;
 use SilverStripe\Core\Environment;
 use SilverStripe\Dev\SapphireTest;
 
-
 class ClientTest extends SapphireTest
 {
 
-    function setUp() {
+    protected function setUp()
+    {
         // Pretend to start a session and suppress the error to shut up the orginal auth0 client that we extend.
         @session_start();
         parent::setUp();
     }
 
-    function testGetSettings()
+    public function testGetSettings()
     {
         $expected = [
             "domain" => "example.au.auth0.com",
@@ -55,7 +55,5 @@ class ClientTest extends SapphireTest
             $expected,
             $client->getSettings()
         );
-
-
     }
 }

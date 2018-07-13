@@ -2,7 +2,6 @@
 
 namespace MaximeRainville\Auth0\Tests;
 
-
 use MaximeRainville\Auth0\LoginHandler;
 use SilverStripe\Control\HTTPRequest;
 use SilverStripe\Control\RequestHandler;
@@ -36,7 +35,7 @@ class AuthenticatorTest extends SapphireTest
             array()
         );
         $this->assertNull(
-            $auth->authenticate([],$request),
+            $auth->authenticate([], $request),
             "Auth0 Authenticator null allow you to autenticate with a password"
         );
     }

@@ -58,7 +58,4 @@ class MemberExtraMetaDataExtension extends DataExtension
                 ->setDisabled(true);
         }
     }
-
-
 }
-

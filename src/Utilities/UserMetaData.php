@@ -70,5 +70,4 @@ class UserMetaData
             empty($this->roles)
         );
     }
-
 }
