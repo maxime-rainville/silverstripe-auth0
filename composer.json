@@ -1,5 +1,5 @@
 {
-    "name": "maximerainville/silverstripe-auth0",
+    "name": "maxime-rainville/silverstripe-auth0",
     "description": "Auth0 authorizer for SilverStipe 4.",
     "type": "silverstripe-vendormodule",
     "license": "MIT",
