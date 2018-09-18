@@ -122,13 +122,10 @@ class LoginHandler extends RequestHandler
     {
         $backURL = $this->getRequest()->getVar('BackURL');
 
-        return Form::create(
+        return LoginForm::create(
             $this,
             'Form',
-            FieldList::create([
-                HiddenField::create('BackURL')->setValue($backURL)
-            ]),
-            FieldList::create([FormAction::create('doLogin', 'Login with Auth0')])
+            $backURL
         );
     }
 
