@@ -44,9 +44,12 @@ class MemberExtraMetaDataExtension extends DataExtension
         $fields->removeByName('Auth0Picture');
 
         $owner = $this->getOwner();
+
         if ($owner->Auth0Sub) {
             $fields->removeByName('Password');
-            $fields->removeByName('DirectGroups');
+            $fields->fieldByName('Root.Main.DirectGroups')
+                ->setReadonly(true)
+                ->setDisabled(true);
             $fields->fieldByName('Root.Main.Email')
                 ->setReadonly(true)
                 ->setDisabled(true);
