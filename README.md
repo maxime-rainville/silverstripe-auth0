@@ -30,7 +30,7 @@ If you disable this module, your original credentials will still work however.
 
 ### Installing 
 ```bash
-composer require maximerainville/silverstripe-auth0
+composer require maxime-rainville/silverstripe-auth0
 ```
 
 ### Setting up an Auth0 account and application
