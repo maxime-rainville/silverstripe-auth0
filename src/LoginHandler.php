@@ -247,7 +247,15 @@ class LoginHandler extends RequestHandler
     protected function updateMember(array $userInfo)
     {
         // Try to find our member
-        $member = Member::get()->filter('Email', $userInfo['email'])->First();
+        if (strlen($userInfo['email'] > 0)) {
+            $member = Member::get()->filter([
+                'Email' => $userInfo['email']
+            ])->First();
+        } else {
+            $member = Member::get()->filter([
+               'Auth0Sub' => $userInfo['sub']
+            ])->First();
+        }
 
         // Couldn't find a member. Let's see if we can create it.
         if (!$member) {
