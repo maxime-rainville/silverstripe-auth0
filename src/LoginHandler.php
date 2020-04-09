@@ -246,16 +246,7 @@ class LoginHandler extends RequestHandler
      */
     protected function updateMember(array $userInfo)
     {
-        // Try to find our member
-        if (strlen($userInfo['email'] > 0)) {
-            $member = Member::get()->filter([
-                'Email' => $userInfo['email']
-            ])->First();
-        } else {
-            $member = Member::get()->filter([
-               'Auth0Sub' => $userInfo['sub']
-            ])->First();
-        }
+        $member = $this->findMatchingMember($userInfo);
 
         // Couldn't find a member. Let's see if we can create it.
         if (!$member) {
@@ -282,6 +273,31 @@ class LoginHandler extends RequestHandler
         $member->write();
 
         return $member;
+    }
+
+    /**
+     * Finds a matching member by using the $userInfo array. Default is to use Email address to find
+     * a match, but since Auth0 allows empty email fields, we need to be able to overwrite this behaviour
+     * and match with other fields
+     *
+     * Extension can hook into this method if they want.
+     *
+     * @param  array  $userInfo [description]
+     * @return Member|false
+     */
+    protected function findMatchingMember(array $userInfo) {
+        $answers = $this->extend('findMatchingMember', $userInfo);
+        foreach ($answers as $member) {
+            if ($member) {
+                return $member;
+            }
+        }
+
+        if (strlen($userInfo['email']) > 0) {
+            return Member::get()->filter(['Email' => $userInfo['email']])->First();
+        } else {
+            return Member::get()->filter(['Auth0Sub' => $userInfo['sub']])->First();
+        }
     }
 
     /**
